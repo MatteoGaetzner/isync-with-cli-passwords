@@ -3550,10 +3550,10 @@ static int imap_parse_store(conffile_t *cfg, store_conf_t **storep) {
   }
 
   // Inject the command line passwords
-  if (n_stdin_creds > 0) {
+  if (n_stdin_creds) {
     for (unsigned int i = 0; i < n_stdin_creds; ++i) {
-      if (!strcasecmp(creds->email, store->server->user)) {
-        store->server->pass = creds->password;
+      if (!strcasecmp(creds[i].email, server->user)) {
+        server->pass = nfstrdup(creds[i].password);
       }
     }
   }

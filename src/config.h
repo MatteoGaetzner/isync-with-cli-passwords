@@ -39,12 +39,12 @@ typedef struct {
 #define ARG_OPTIONAL 0
 #define ARG_REQUIRED 1
 
-unsigned int n_stdin_creds = 0;
+extern unsigned int n_stdin_creds;
 
 #define MAX_EMAIL_LEN 254
 #define MAX_PW_LEN 128
 #define MAX_LINE_LEN (MAX_EMAIL_LEN + 1 + MAX_PW_LEN)
-#define MAX_N_CREDENTIALS 1
+#define MAX_N_CREDENTIALS 1024
 
 typedef struct _credentials {
   char email[MAX_EMAIL_LEN];

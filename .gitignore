@@ -30,3 +30,7 @@
 
 Makefile
 Makefile.in
+
+fake_stdin.txt
+gdbcommands.gdb
+conf*/

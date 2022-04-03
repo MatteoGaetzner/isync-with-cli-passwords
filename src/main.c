@@ -62,71 +62,75 @@ static void ATTR_NORETURN version(void) {
 }
 
 static void ATTR_NORETURN usage(int code) {
-  fputs(PACKAGE
-        " " VERSION " - mailbox synchronizer\n"
-        "Copyright (C) 2000-2002 Michael R. Elkins <me@mutt.org>\n"
-        "Copyright (C) 2002-2006,2008,2010-2017 Oswald Buddenhagen "
-        "<ossi@users.sf.net>\n"
-        "Copyright (C) 2004 Theodore Ts'o <tytso@mit.edu>\n"
-        "usage:\n"
-        " " EXE " [flags] {{channel[:box,...]|group} ...|-a}\n"
-        "  -a, --all		operate on all defined channels\n"
-        "  -l, --list		list mailboxes instead of syncing them\n"
-        "  -n, --new		propagate new messages\n"
-        "  -d, --delete		propagate message deletions\n"
-        "  -f, --flags		propagate message flag changes\n"
-        "  -N, --renew		propagate previously not propagated new "
-        "messages\n"
-        "  -L, --pull		propagate from far to near side\n"
-        "  -H, --push		propagate from near to far side\n"
-        "  -C, --create		propagate creations of mailboxes\n"
-        "  -R, --remove		propagate deletions of mailboxes\n"
-        "  -X, --expunge		expunge	deleted messages\n"
-        "  -c, --config CONFIG	read an alternate config file (default: ~/." EXE
-        "  -p, --passwords read passwords from stdin\n"
-        "The corresponding email preceeds the password. Email and password "
-        "are separated by a single space. Each email, password tuple is "
-        "separated by a new line.\n"
-        "  -D, --debug		debugging modes (see manual)\n"
-        "  -V, --verbose		display what is happening\n"
-        "  -q, --quiet		don't display progress counters\n"
-        "  -v, --version		display version\n"
-        "  -h, --help		display this help message\n"
-        "\nIf neither --pull nor --push are specified, both are active.\n"
-        "If neither --new, --delete, --flags nor --renew are specified, all "
-        "are active.\n"
-        "Direction and operation can be concatenated like --pull-new, etc.\n"
-        "--create, --remove, and --expunge can be suffixed with -far/-near.\n"
-        "See the man page for details.\n"
-        "\nSupported mailbox formats are: IMAP4rev1, Maildir\n"
-        "\nCompile time options:\n"
+  fputs(
+      PACKAGE
+      " " VERSION " - mailbox synchronizer\n"
+      "Copyright (C) 2000-2002 Michael R. Elkins <me@mutt.org>\n"
+      "Copyright (C) 2002-2006,2008,2010-2017 Oswald Buddenhagen "
+      "<ossi@users.sf.net>\n"
+      "Copyright (C) 2004 Theodore Ts'o <tytso@mit.edu>\n"
+      "usage:\n"
+      " " EXE " [flags] {{channel[:box,...]|group} ...|-a}\n"
+      "  -a, --all		operate on all defined channels\n"
+      "  -l, --list		list mailboxes instead of syncing them\n"
+      "  -n, --new		propagate new messages\n"
+      "  -d, --delete		propagate message deletions\n"
+      "  -f, --flags		propagate message flag changes\n"
+      "  -N, --renew		propagate previously not propagated new "
+      "messages\n"
+      "  -L, --pull		propagate from far to near side\n"
+      "  -H, --push		propagate from near to far side\n"
+      "  -C, --create		propagate creations of mailboxes\n"
+      "  -R, --remove		propagate deletions of mailboxes\n"
+      "  -X, --expunge		expunge	deleted messages\n"
+      "  -c, --config CONIG	read an alternate config file (default: ~/." EXE
+      ")\n"
+      "  -p, --passwords       read passwords from stdin\n"
+      "                        The corresponding email preceeds the password.\n"
+      "                        Email and password are separated by a single "
+      "space.\n"
+      "                        Each email, password tuple is separated by a "
+      "new line.\n"
+      "  -D, --debug		debugging modes (see manual)\n"
+      "  -V, --verbose		display what is happening\n"
+      "  -q, --quiet		don't display progress counters\n"
+      "  -v, --version		display version\n"
+      "  -h, --help		display this help message\n"
+      "\nIf neither --pull nor --push are specified, both are active.\n"
+      "If neither --new, --delete, --flags nor --renew are specified, all "
+      "are active.\n"
+      "Direction and operation can be concatenated like --pull-new, etc.\n"
+      "--create, --remove, and --expunge can be suffixed with -far/-near.\n"
+      "See the man page for details.\n"
+      "\nSupported mailbox formats are: IMAP4rev1, Maildir\n"
+      "\nCompile time options:\n"
 #ifdef HAVE_LIBSSL
-        "  +HAVE_LIBSSL"
+      "  +HAVE_LIBSSL"
 #else
-        "  -HAVE_LIBSSL"
+      "  -HAVE_LIBSSL"
 #endif
 #ifdef HAVE_LIBSASL
-        " +HAVE_LIBSASL"
+      " +HAVE_LIBSASL"
 #else
-        " -HAVE_LIBSASL"
+      " -HAVE_LIBSASL"
 #endif
 #ifdef HAVE_LIBZ
-        " +HAVE_LIBZ"
+      " +HAVE_LIBZ"
 #else
-        " -HAVE_LIBZ"
+      " -HAVE_LIBZ"
 #endif
 #ifdef USE_DB
-        " +USE_DB"
+      " +USE_DB"
 #else
-        " -USE_DB"
+      " -USE_DB"
 #endif
 #ifdef HAVE_IPV6
-        " +HAVE_IPV6\n"
+      " +HAVE_IPV6\n"
 #else
-        " -HAVE_IPV6\n"
+      " -HAVE_IPV6\n"
 #endif
-        ,
-        code ? stderr : stdout);
+      ,
+      code ? stderr : stdout);
   exit(code);
 }
 
@@ -386,13 +390,13 @@ gotchan:
   return ce;
 }
 
-unsigned int read_credentials(credentials *creds) {
+unsigned int read_credentials(credentials *creds_l) {
   char line[MAX_LINE_LEN];
 
   unsigned int n_creds = 0;
   while (fgets(line, MAX_LINE_LEN, stdin) && n_creds < MAX_N_CREDENTIALS) {
-    if (sscanf(line, "%s %s", creds[n_creds].email, creds[n_creds].password) ==
-        2) {
+    if (sscanf(line, "%s %s", creds_l[n_creds].email,
+               creds_l[n_creds].password) == 2) {
       n_creds++;
     }
   };
@@ -422,6 +426,10 @@ typedef struct {
 #define E_START 0
 #define E_OPEN 1
 #define E_SYNC 2
+
+// Initialize number of passed in credentials
+unsigned int n_stdin_creds = 0;
+credentials creds[MAX_N_CREDENTIALS];
 
 static void sync_chans(main_vars_t *mvars, int ent);
 

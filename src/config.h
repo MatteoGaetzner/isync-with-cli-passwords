@@ -26,26 +26,40 @@
 #include "common.h"
 
 typedef struct {
-	const char *file;
-	FILE *fp;
-	char *buf;
-	int bufl;
-	int line;
-	int err;
-	int ms_warn;
-	char *cmd, *val, *rest;
+  const char *file;
+  FILE *fp;
+  char *buf;
+  int bufl;
+  int line;
+  int err;
+  int ms_warn;
+  char *cmd, *val, *rest;
 } conffile_t;
 
 #define ARG_OPTIONAL 0
 #define ARG_REQUIRED 1
 
-char *get_arg( conffile_t *cfile, int required, int *comment );
+unsigned int n_stdin_creds = 0;
 
-char parse_bool( conffile_t *cfile );
-int parse_int( conffile_t *cfile );
-uint parse_size( conffile_t *cfile );
-int getcline( conffile_t *cfile );
-int merge_ops( int cops, int ops[] );
-int load_config( const char *filename );
+#define MAX_EMAIL_LEN 254
+#define MAX_PW_LEN 128
+#define MAX_LINE_LEN (MAX_EMAIL_LEN + 1 + MAX_PW_LEN)
+#define MAX_N_CREDENTIALS 1
+
+typedef struct _credentials {
+  char email[MAX_EMAIL_LEN];
+  char password[MAX_PW_LEN];
+} credentials;
+
+extern credentials creds[MAX_N_CREDENTIALS];
+
+char *get_arg(conffile_t *cfile, int required, int *comment);
+
+char parse_bool(conffile_t *cfile);
+int parse_int(conffile_t *cfile);
+uint parse_size(conffile_t *cfile);
+int getcline(conffile_t *cfile);
+int merge_ops(int cops, int ops[]);
+int load_config(const char *filename);
 
 #endif

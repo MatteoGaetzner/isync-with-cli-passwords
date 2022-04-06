@@ -92,7 +92,7 @@ static void ATTR_NORETURN usage(int code)
         "                        Email and password are separated by a single "
         "space.\n"
         "                        Each email, password tuple is separated by a "
-        "new line.\n"
+        "new line. Don't supply 'Pass' or 'PassCmd' in your mbsyncrc.\n"
         "  -D, --debug		debugging modes (see manual)\n"
         "  -V, --verbose		display what is happening\n"
         "  -q, --quiet		don't display progress counters\n"

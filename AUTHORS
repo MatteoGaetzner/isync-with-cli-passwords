@@ -7,6 +7,9 @@ Theodore Ts'o <tytso@mit.edu>
 Nicolas Boullis <nboullis@debian.org>
 	* Debian package maintainer and minor upstream contributions
 
+Matteo Gätzner <m.gaetzner@gmx.de>
+	* Contributor, cli passwords option
+
 Michael Elkins <me@mutt.org>
 	* Original author
 

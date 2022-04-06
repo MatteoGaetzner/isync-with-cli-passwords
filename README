@@ -35,6 +35,7 @@ change was necessary because of massive changes in the user interface.
 	* Supports TLS/SSL via imaps: (port 993) and STARTTLS
 	* Supports SASL for authentication
 	* Pipelining for maximum speed
+	* Takes credentials from command line
 
 * Compatibility
 

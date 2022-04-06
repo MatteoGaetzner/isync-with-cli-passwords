@@ -32,8 +32,8 @@
 #define OP_RENEW (1 << 1)
 #define OP_DELETE (1 << 2)
 #define OP_FLAGS (1 << 3)
-#define OP_MASK_TYPE                                                           \
-  (OP_NEW | OP_RENEW | OP_DELETE | OP_FLAGS) /* asserted in the target ops */
+#define OP_MASK_TYPE \
+    (OP_NEW | OP_RENEW | OP_DELETE | OP_FLAGS) /* asserted in the target ops */
 #define OP_EXPUNGE (1 << 4)
 #define OP_CREATE (1 << 5)
 #define OP_REMOVE (1 << 6)
@@ -48,34 +48,34 @@
 #define XOP_HAVE_REMOVE (1 << 13)
 
 typedef struct channel_conf {
-  struct channel_conf *next;
-  const char *name;
-  store_conf_t *stores[2];
-  const char *boxes[2];
-  char *sync_state;
-  string_list_t *patterns;
-  int ops[2];
-  int max_messages; // For near side only.
-  signed char expire_unread;
-  char use_internal_date;
+    struct channel_conf* next;
+    const char* name;
+    store_conf_t* stores[2];
+    const char* boxes[2];
+    char* sync_state;
+    string_list_t* patterns;
+    int ops[2];
+    int max_messages; // For near side only.
+    signed char expire_unread;
+    char use_internal_date;
 } channel_conf_t;
 
 typedef struct group_conf {
-  struct group_conf *next;
-  const char *name;
-  string_list_t *channels;
+    struct group_conf* next;
+    const char* name;
+    string_list_t* channels;
 } group_conf_t;
 
 extern channel_conf_t global_conf;
-extern channel_conf_t *channels;
-extern group_conf_t *groups;
+extern channel_conf_t* channels;
+extern group_conf_t* groups;
 
 extern const char *str_fn[2], *str_hl[2];
 
 #define SYNC_OK 0 /* assumed to be 0 */
 #define SYNC_FAIL 1
 #define SYNC_BAD(fn) (4 << (fn))
-#define SYNC_NOGOOD 16   /* internal */
+#define SYNC_NOGOOD 16 /* internal */
 #define SYNC_CANCELED 32 /* internal */
 
 #define BOX_POSSIBLE -1
@@ -83,8 +83,8 @@ extern const char *str_fn[2], *str_hl[2];
 #define BOX_PRESENT 1
 
 /* All passed pointers must stay alive until cb is called. */
-void sync_boxes(store_t *ctx[], const char *const names[], int present[],
-                channel_conf_t *chan, void (*cb)(int sts, void *aux),
-                void *aux);
+void sync_boxes(store_t* ctx[], const char* const names[], int present[],
+    channel_conf_t* chan, void (*cb)(int sts, void* aux),
+    void* aux);
 
 #endif

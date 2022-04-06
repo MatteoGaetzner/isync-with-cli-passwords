@@ -28,40 +28,40 @@
 typedef struct gen_cmd gen_cmd_t;
 
 typedef union proxy_store {
-	store_t gen;
-	struct {
-		STORE(union proxy_store)
-		const char *label;  // foreign
-		uint ref_count;
-		driver_t *real_driver;
-		store_t *real_store;
-		gen_cmd_t *done_cmds, **done_cmds_append;
-		gen_cmd_t *check_cmds, **check_cmds_append;
-		wakeup_t wakeup;
+    store_t gen;
+    struct {
+        STORE(union proxy_store)
+        const char* label; // foreign
+        uint ref_count;
+        driver_t* real_driver;
+        store_t* real_store;
+        gen_cmd_t *done_cmds, **done_cmds_append;
+        gen_cmd_t *check_cmds, **check_cmds_append;
+        wakeup_t wakeup;
 
-		void (*bad_callback)( void *aux );
-		void *bad_callback_aux;
-	};
+        void (*bad_callback)(void* aux);
+        void* bad_callback_aux;
+    };
 } proxy_store_t;
 
 static void ATTR_PRINTFLIKE(1, 2)
-debug( const char *msg, ... )
+    debug(const char* msg, ...)
 {
-	va_list va;
+    va_list va;
 
-	va_start( va, msg );
-	vdebug( DEBUG_DRV, msg, va );
-	va_end( va );
+    va_start(va, msg);
+    vdebug(DEBUG_DRV, msg, va);
+    va_end(va);
 }
 
 static void ATTR_PRINTFLIKE(1, 2)
-debugn( const char *msg, ... )
+    debugn(const char* msg, ...)
 {
-	va_list va;
+    va_list va;
 
-	va_start( va, msg );
-	vdebugn( DEBUG_DRV, msg, va );
-	va_end( va );
+    va_start(va, msg);
+    vdebugn(DEBUG_DRV, msg, va);
+    va_end(va);
 }
 
 /* Keep the mailbox driver flag definitions in sync: */
@@ -69,130 +69,130 @@ debugn( const char *msg, ... )
 /* The order is according to alphabetical maildir flag sort */
 static const char Flags[] = { 'D', 'F', 'P', 'R', 'S', 'T' };
 
-static char *
-proxy_make_flags( uchar flags, char *buf )
+static char*
+proxy_make_flags(uchar flags, char* buf)
 {
-	uint i, d;
+    uint i, d;
 
-	for (d = 0, i = 0; i < as(Flags); i++)
-		if (flags & (1 << i))
-			buf[d++] = Flags[i];
-	buf[d] = 0;
-	return buf;
+    for (d = 0, i = 0; i < as(Flags); i++)
+        if (flags & (1 << i))
+            buf[d++] = Flags[i];
+    buf[d] = 0;
+    return buf;
 }
 
 static void
-proxy_store_deref( proxy_store_t *ctx )
+proxy_store_deref(proxy_store_t* ctx)
 {
-	if (!--ctx->ref_count) {
-		assert( !pending_wakeup( &ctx->wakeup ) );
-		free( ctx );
-	}
+    if (!--ctx->ref_count) {
+        assert(!pending_wakeup(&ctx->wakeup));
+        free(ctx);
+    }
 }
 
 static int curr_tag;
 
-#define GEN_CMD \
-	uint ref_count; \
-	int tag; \
-	proxy_store_t *ctx; \
-	gen_cmd_t *next; \
-	void (*queued_cb)( gen_cmd_t *gcmd );
+#define GEN_CMD         \
+    uint ref_count;     \
+    int tag;            \
+    proxy_store_t* ctx; \
+    gen_cmd_t* next;    \
+    void (*queued_cb)(gen_cmd_t * gcmd);
 
 struct gen_cmd {
-	GEN_CMD
+    GEN_CMD
 };
 
 #define GEN_STS_CMD \
-	GEN_CMD \
-	int sts;
+    GEN_CMD         \
+    int sts;
 
 typedef union {
-	gen_cmd_t gen;
-	struct {
-		GEN_STS_CMD
-	};
+    gen_cmd_t gen;
+    struct {
+        GEN_STS_CMD
+    };
 } gen_sts_cmd_t;
 
-static gen_cmd_t *
-proxy_cmd_new( proxy_store_t *ctx, uint sz )
+static gen_cmd_t*
+proxy_cmd_new(proxy_store_t* ctx, uint sz)
 {
-	gen_cmd_t *cmd = nfmalloc( sz );
-	cmd->ref_count = 2;
-	cmd->tag = ++curr_tag;
-	cmd->ctx = ctx;
-	ctx->ref_count++;
-	return cmd;
+    gen_cmd_t* cmd = nfmalloc(sz);
+    cmd->ref_count = 2;
+    cmd->tag = ++curr_tag;
+    cmd->ctx = ctx;
+    ctx->ref_count++;
+    return cmd;
 }
 
 static void
-proxy_cmd_done( gen_cmd_t *cmd )
+proxy_cmd_done(gen_cmd_t* cmd)
 {
-	if (!--cmd->ref_count) {
-		proxy_store_deref( cmd->ctx );
-		free( cmd );
-	}
+    if (!--cmd->ref_count) {
+        proxy_store_deref(cmd->ctx);
+        free(cmd);
+    }
 }
 
 static void
-proxy_wakeup( void *aux )
+proxy_wakeup(void* aux)
 {
-	proxy_store_t *ctx = (proxy_store_t *)aux;
+    proxy_store_t* ctx = (proxy_store_t*)aux;
 
-	gen_cmd_t *cmd = ctx->done_cmds;
-	assert( cmd );
-	if (!(ctx->done_cmds = cmd->next))
-		ctx->done_cmds_append = &ctx->done_cmds;
-	else
-		conf_wakeup( &ctx->wakeup, 0 );
-	cmd->queued_cb( cmd );
-	proxy_cmd_done( cmd );
+    gen_cmd_t* cmd = ctx->done_cmds;
+    assert(cmd);
+    if (!(ctx->done_cmds = cmd->next))
+        ctx->done_cmds_append = &ctx->done_cmds;
+    else
+        conf_wakeup(&ctx->wakeup, 0);
+    cmd->queued_cb(cmd);
+    proxy_cmd_done(cmd);
 }
 
 static void
-proxy_invoke_cb( gen_cmd_t *cmd, void (*cb)( gen_cmd_t * ), int checked, const char *name )
+proxy_invoke_cb(gen_cmd_t* cmd, void (*cb)(gen_cmd_t*), int checked, const char* name)
 {
-	if (DFlags & FORCEASYNC) {
-		debug( "%s[% 2d] Callback queue %s%s\n", cmd->ctx->label, cmd->tag, name, checked ? " (checked)" : "" );
-		cmd->queued_cb = cb;
-		cmd->next = NULL;
-		if (checked) {
-			*cmd->ctx->check_cmds_append = cmd;
-			cmd->ctx->check_cmds_append = &cmd->next;
-		} else {
-			*cmd->ctx->done_cmds_append = cmd;
-			cmd->ctx->done_cmds_append = &cmd->next;
-			conf_wakeup( &cmd->ctx->wakeup, 0 );
-		}
-	} else {
-		cb( cmd );
-		proxy_cmd_done( cmd );
-	}
+    if (DFlags & FORCEASYNC) {
+        debug("%s[% 2d] Callback queue %s%s\n", cmd->ctx->label, cmd->tag, name, checked ? " (checked)" : "");
+        cmd->queued_cb = cb;
+        cmd->next = NULL;
+        if (checked) {
+            *cmd->ctx->check_cmds_append = cmd;
+            cmd->ctx->check_cmds_append = &cmd->next;
+        } else {
+            *cmd->ctx->done_cmds_append = cmd;
+            cmd->ctx->done_cmds_append = &cmd->next;
+            conf_wakeup(&cmd->ctx->wakeup, 0);
+        }
+    } else {
+        cb(cmd);
+        proxy_cmd_done(cmd);
+    }
 }
 
 static void
-proxy_flush_checked_cmds( proxy_store_t *ctx )
+proxy_flush_checked_cmds(proxy_store_t* ctx)
 {
-	if (ctx->check_cmds) {
-		*ctx->done_cmds_append = ctx->check_cmds;
-		ctx->done_cmds_append = ctx->check_cmds_append;
-		ctx->check_cmds_append = &ctx->check_cmds;
-		ctx->check_cmds = NULL;
-		conf_wakeup( &ctx->wakeup, 0 );
-	}
+    if (ctx->check_cmds) {
+        *ctx->done_cmds_append = ctx->check_cmds;
+        ctx->done_cmds_append = ctx->check_cmds_append;
+        ctx->check_cmds_append = &ctx->check_cmds;
+        ctx->check_cmds = NULL;
+        conf_wakeup(&ctx->wakeup, 0);
+    }
 }
 
 static void
-proxy_cancel_checked_cmds( proxy_store_t *ctx )
+proxy_cancel_checked_cmds(proxy_store_t* ctx)
 {
-	gen_cmd_t *cmd;
+    gen_cmd_t* cmd;
 
-	while ((cmd = ctx->check_cmds)) {
-		if (!(ctx->check_cmds = cmd->next))
-			ctx->check_cmds_append = &ctx->check_cmds;
-		((gen_sts_cmd_t *)cmd)->sts = DRV_CANCELED;
-		cmd->queued_cb( cmd );
-	}
+    while ((cmd = ctx->check_cmds)) {
+        if (!(ctx->check_cmds = cmd->next))
+            ctx->check_cmds_append = &ctx->check_cmds;
+        ((gen_sts_cmd_t*)cmd)->sts = DRV_CANCELED;
+        cmd->queued_cb(cmd);
+    }
 }
 
 #if 0
@@ -402,42 +402,42 @@ static @type@proxy_@name@( store_t *gctx@decl_args@, void (*cb)( @decl_cb_args@v
 
 //# SPECIAL set_bad_callback
 static void
-proxy_set_bad_callback( store_t *gctx, void (*cb)( void *aux ), void *aux )
+proxy_set_bad_callback(store_t* gctx, void (*cb)(void* aux), void* aux)
 {
-	proxy_store_t *ctx = (proxy_store_t *)gctx;
+    proxy_store_t* ctx = (proxy_store_t*)gctx;
 
-	ctx->bad_callback = cb;
-	ctx->bad_callback_aux = aux;
+    ctx->bad_callback = cb;
+    ctx->bad_callback_aux = aux;
 }
 
 static void
-proxy_invoke_bad_callback( proxy_store_t *ctx )
+proxy_invoke_bad_callback(proxy_store_t* ctx)
 {
-	ctx->ref_count++;
-	debug( "%sCallback enter bad store\n", ctx->label );
-	ctx->bad_callback( ctx->bad_callback_aux );
-	debug( "%sCallback leave bad store\n", ctx->label );
-	proxy_store_deref( ctx );
+    ctx->ref_count++;
+    debug("%sCallback enter bad store\n", ctx->label);
+    ctx->bad_callback(ctx->bad_callback_aux);
+    debug("%sCallback leave bad store\n", ctx->label);
+    proxy_store_deref(ctx);
 }
 
 //# EXCLUDE alloc_store
-store_t *
-proxy_alloc_store( store_t *real_ctx, const char *label )
+store_t*
+proxy_alloc_store(store_t* real_ctx, const char* label)
 {
-	proxy_store_t *ctx;
+    proxy_store_t* ctx;
 
-	ctx = nfcalloc( sizeof(*ctx) );
-	ctx->driver = &proxy_driver;
-	ctx->gen.conf = real_ctx->conf;
-	ctx->ref_count = 1;
-	ctx->label = label;
-	ctx->done_cmds_append = &ctx->done_cmds;
-	ctx->check_cmds_append = &ctx->check_cmds;
-	ctx->real_driver = real_ctx->driver;
-	ctx->real_store = real_ctx;
-	ctx->real_driver->set_bad_callback( ctx->real_store, (void (*)(void *))proxy_invoke_bad_callback, ctx );
-	init_wakeup( &ctx->wakeup, proxy_wakeup, ctx );
-	return &ctx->gen;
+    ctx = nfcalloc(sizeof(*ctx));
+    ctx->driver = &proxy_driver;
+    ctx->gen.conf = real_ctx->conf;
+    ctx->ref_count = 1;
+    ctx->label = label;
+    ctx->done_cmds_append = &ctx->done_cmds;
+    ctx->check_cmds_append = &ctx->check_cmds;
+    ctx->real_driver = real_ctx->driver;
+    ctx->real_store = real_ctx;
+    ctx->real_driver->set_bad_callback(ctx->real_store, (void (*)(void*))proxy_invoke_bad_callback, ctx);
+    init_wakeup(&ctx->wakeup, proxy_wakeup, ctx);
+    return &ctx->gen;
 }
 
 //# EXCLUDE parse_store
